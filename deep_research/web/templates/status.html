@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>研究进行中 - 深度研究 Agent</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- 移除自动刷新，改用AJAX -->
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>深度研究 Agent</h1>
+            <p class="subtitle">AI驱动的综合性研究助手</p>
+        </header>
+
+        <main>
+            <section class="research-status">
+                <h2>研究进行中</h2>
+                
+                <div class="task-info">
+                    <p><strong>研究问题:</strong> <span id="query-text">{{ task_info.get('query', '未知查询') }}</span></p>
+                    <p><strong>使用模型:</strong> <span id="model-name">{{ task_info.get('model', 'deepseek-chat') }}</span></p>
+                    <p><strong>开始时间:</strong> <span id="start-time">{{ task_info.get('start_time', '未知') }}</span></p>
+                    <p id="elapsed-time-container"><strong>已运行时间:</strong> <span id="elapsed-time">计算中...</span></p>
+                </div>
+                
+                <div class="status-container">
+                    <h3>任务状态: <span class="status-text" id="status-text">{{ task_info.get('status', '初始化中') }}</span></h3>
+                    
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progress-bar" style="width: {{ task_info.get('progress', 0) }}%;">
+                            <span class="progress-text" id="progress-text">{{ task_info.get('progress', 0) }}%</span>
+                        </div>
+                    </div>
+                    
+                    <p class="status-message" id="status-message">{{ task_info.get('message', '正在准备研究...') }}</p>
+                    
+                    <!-- 详细阶段信息 -->
+                    <div class="progress-details">
+                        <h4>研究阶段详情</h4>
+                        <div class="stages-container" id="stages-container">
+                            <div class="stage" data-stage="initialization">
+                                <div class="stage-icon">1</div>
+                                <div class="stage-info">
+                                    <div class="stage-name">初始化</div>
+                                    <div class="stage-progress"></div>
+                                </div>
+                            </div>
+                            <div class="stage" data-stage="research">
+                                <div class="stage-icon">2</div>
+                                <div class="stage-info">
+                                    <div class="stage-name">深度研究</div>
+                                    <div class="stage-progress"></div>
+                                </div>
+                            </div>
+                            <div class="stage" data-stage="formatting">
+                                <div class="stage-icon">3</div>
+                                <div class="stage-info">
+                                    <div class="stage-name">整理结果</div>
+                                    <div class="stage-progress"></div>
+                                </div>
+                            </div>
+                            <div class="stage" data-stage="report_generation">
+                                <div class="stage-icon">4</div>
+                                <div class="stage-info">
+                                    <div class="stage-name">生成报告</div>
+                                    <div class="stage-progress"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 当前活动日志 -->
+                    <div class="activity-log">
+                        <h4>研究活动日志</h4>
+                        <div class="log-container" id="log-container">
+                            <div class="log-entry">正在初始化研究环境...</div>
+                        </div>
+                    </div>
+                    
+                    <div id="status-boxes">
+                        {% if task_info.get('status') == 'failed' %}
+                        <div class="error-box">
+                            <h3>研究失败</h3>
+                            <p>{{ task_info.get('error', '发生未知错误') }}</p>
+                            <p><a href="{{ url_for('index') }}" class="btn-secondary">返回首页</a></p>
+                        </div>
+                        {% elif task_info.get('status') == 'completed' %}
+                        <div class="success-box">
+                            <h3>研究完成!</h3>
+                            <p><a href="{{ url_for('show_result', task_id=task_id) }}" class="btn-primary">查看研究结果</a></p>
+                        </div>
+                        {% else %}
+                        <div class="loading-box">
+                            <div class="loading-spinner"></div>
+                            <p>研究进行中，请稍候...</p>
+                            <p class="note">正在实时更新研究进度</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p><a href="{{ url_for('index') }}">返回首页</a> | &copy; 2025 深度研究 Agent</p>
+        </footer>
+    </div>
+
+    <script>
+        // 存储日志条目，避免重复
+        const logEntries = new Set();
+        const startTime = new Date('{{ task_info.get("start_time", "") }}' || new Date());
+        
+        // 增加调试信息
+        console.log("状态页面初始化，任务ID: {{ task_id }}");
+        console.log("初始任务信息:", {{ task_info|tojson }});
+        
+        // 更新进度条颜色函数
+        function updateProgressColor(progress) {
+            const progressBar = document.getElementById('progress-bar');
+            if (progress < 30) {
+                progressBar.style.backgroundColor = '#ff9800';
+            } else if (progress < 70) {
+                progressBar.style.backgroundColor = '#2196F3';
+            } else {
+                progressBar.style.backgroundColor = '#4CAF50';
+            }
+        }
+        
+        // 更新运行时间
+        function updateElapsedTime() {
+            const now = new Date();
+            const elapsed = now - startTime;
+            const hours = Math.floor(elapsed / (1000 * 60 * 60));
+            const minutes = Math.floor((elapsed % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((elapsed % (1000 * 60)) / 1000);
+            
+            document.getElementById('elapsed-time').textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        // 更新日志条目
+        function addLogEntry(message) {
+            if (logEntries.has(message)) return;
+            
+            logEntries.add(message);
+            const logContainer = document.getElementById('log-container');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = message;
+            
+            // 添加新日志到顶部
+            logContainer.insertBefore(entry, logContainer.firstChild);
+            
+            // 限制日志条目数量
+            if (logContainer.children.length > 10) {
+                logContainer.removeChild(logContainer.lastChild);
+            }
+        }
+        
+        // 更新阶段信息
+        function updateStageStatus(data) {
+            console.log("更新阶段状态:", data);
+            const currentStage = data.detail?.stage || '';
+            const progress = data.progress || 0;
+            const stages = document.querySelectorAll('.stage');
+            
+            stages.forEach(stage => {
+                const stageName = stage.getAttribute('data-stage');
+                
+                // 重置所有阶段的类
+                stage.classList.remove('active', 'completed');
+                
+                // 根据进度判断阶段状态
+                if (stageName === 'initialization' && progress >= 5) {
+                    stage.classList.add(progress >= 10 ? 'completed' : 'active');
+                } else if (stageName === 'research' && progress >= 10) {
+                    stage.classList.add(progress >= 75 ? 'completed' : 'active');
+                } else if (stageName === 'formatting' && progress >= 75) {
+                    stage.classList.add(progress >= 80 ? 'completed' : 'active');
+                } else if (stageName === 'report_generation' && progress >= 80) {
+                    stage.classList.add(progress >= 98 ? 'completed' : 'active');
+                }
+                
+                // 标记当前活动阶段
+                if (stageName === currentStage) {
+                    stage.classList.add('active');
+                }
+            });
+        }
+        
+        // 更新状态
+        function updateStatus() {
+            console.log("开始请求状态更新");
+            fetch('/api/task_status/{{ task_id }}')
+                .then(response => {
+                    console.log("收到响应:", response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("获取状态数据:", data);
+                    
+                    // 更新基本状态信息
+                    document.getElementById('status-text').textContent = data.status || '运行中';
+                    document.getElementById('progress-bar').style.width = (data.progress || 0) + '%';
+                    document.getElementById('progress-text').textContent = (data.progress || 0) + '%';
+                    document.getElementById('status-message').textContent = data.message || '正在研究...';
+                    
+                    // 更新进度条颜色
+                    updateProgressColor(data.progress || 0);
+                    
+                    // 添加日志条目
+                    if (data.message) {
+                        addLogEntry(data.message);
+                    }
+                    
+                    // 更新阶段状态
+                    updateStageStatus(data);
+                    
+                    // 检查任务是否完成或失败
+                    if (data.status === 'completed') {
+                        console.log("任务已完成，准备跳转");
+                        document.getElementById('status-boxes').innerHTML = `
+                            <div class="success-box">
+                                <h3>研究完成!</h3>
+                                <p><a href="{{ url_for('show_result', task_id=task_id) }}" class="btn-primary">查看研究结果</a></p>
+                            </div>
+                        `;
+                        
+                        // 3秒后自动跳转
+                        setTimeout(function() {
+                            window.location.href = "{{ url_for('show_result', task_id=task_id) }}";
+                        }, 3000);
+                    } else if (data.status === 'failed') {
+                        console.log("任务失败");
+                        document.getElementById('status-boxes').innerHTML = `
+                            <div class="error-box">
+                                <h3>研究失败</h3>
+                                <p>${data.error || '发生未知错误'}</p>
+                                <p><a href="{{ url_for('index') }}" class="btn-secondary">返回首页</a></p>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('获取状态更新失败:', error);
+                    addLogEntry('获取状态更新失败，可能网络问题');
+                });
+        }
+        
+        // 初始更新
+        updateProgressColor({{ task_info.get('progress', 0) }});
+        
+        // 确保立即执行一次状态更新
+        updateStatus();
+        
+        // 定时更新
+        setInterval(updateElapsedTime, 1000);
+        setInterval(updateStatus, 2000);
+        
+        // 初始化运行时间
+        updateElapsedTime();
+        
+        // 添加初始日志
+        addLogEntry('页面加载完成，开始监控研究进度');
+    </script>
+</body>
+</html> 

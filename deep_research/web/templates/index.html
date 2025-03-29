@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深度研究 Agent</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>深度研究 Agent</h1>
+            <p class="subtitle">AI驱动的综合性研究助手</p>
+        </header>
+
+        <main>
+            <section class="research-form">
+                <h2>开始一项新研究</h2>
+                {% if error %}
+                <div class="error-message">{{ error }}</div>
+                {% endif %}
+                
+                <form action="{{ url_for('submit_query') }}" method="post">
+                    <div class="form-group">
+                        <label for="query">研究问题:</label>
+                        <textarea id="query" name="query" rows="4" placeholder="输入您想研究的问题或主题..." required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="model">选择模型:</label>
+                        <select id="model" name="model">
+                            {% for model in models %}
+                            <option value="{{ model.id }}" {% if model.id == 'deepseek-chat' %}selected{% endif %}>
+                                {{ model.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="model-description" id="modelDescription">
+                            {{ models[0].description }}
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="max_depth">研究深度:</label>
+                        <select id="max_depth" name="max_depth">
+                            {% for option in depth_options %}
+                            <option value="{{ option.value }}" {% if option.default %}selected{% endif %}>
+                                {{ option.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="depth-description">
+                            研究深度决定了AI递归分解问题的程度，深度越大研究越全面，但消耗的API调用量也越多
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">开始研究</button>
+                    </div>
+                </form>
+            </section>
+            
+            <section class="features">
+                <h2>系统特点</h2>
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <h3>深度研究</h3>
+                        <p>自动将复杂问题分解为子任务，并递归研究，保证研究深度和广度</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>信息整合</h3>
+                        <p>整合多种来源的信息，生成结构化的研究报告</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>多种输出格式</h3>
+                        <p>支持HTML、Markdown等格式的研究报告输出</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>向量搜索</h3>
+                        <p>使用向量数据库进行语义搜索，更准确找到相关研究内容</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 深度研究 Agent - 基于大语言模型的智能研究系统</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html> 

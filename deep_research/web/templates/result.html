@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>研究结果 - 深度研究 Agent</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>深度研究 Agent</h1>
+            <p class="subtitle">AI驱动的综合性研究助手</p>
+        </header>
+
+        <main>
+            <section class="research-result">
+                <div class="result-header">
+                    <h2>{{ result.get('title', '研究结果') }}</h2>
+                    <div class="task-info">
+                        <p><strong>研究问题:</strong> {{ task_info.get('query', '未知查询') }}</p>
+                        <p><strong>使用模型:</strong> {{ task_info.get('model', 'deepseek-chat') }}</p>
+                        <p><strong>完成时间:</strong> {{ task_info.get('end_time', '未知') }}</p>
+                    </div>
+                    
+                    <div class="result-actions">
+                        {% if html_report_url %}
+                        <a href="{{ html_report_url }}" class="btn-primary" target="_blank">查看完整HTML报告</a>
+                        {% endif %}
+                        
+                        {% if md_report_url %}
+                        <a href="{{ md_report_url }}" class="btn-secondary" download>下载Markdown报告</a>
+                        {% endif %}
+                        
+                        <a href="{{ url_for('index') }}" class="btn-text">开始新的研究</a>
+                    </div>
+                </div>
+                
+                <div class="result-content">
+                    {% if result.get('error') %}
+                    <div class="error-message">
+                        <h3>读取结果失败</h3>
+                        <p>{{ result.get('error') }}</p>
+                    </div>
+                    {% else %}
+                    <div class="toc">
+                        <h3>目录</h3>
+                        <ul>
+                            {% for section in result.get('sections', []) %}
+                            <li><a href="#section-{{ section.get('id', loop.index) }}">{{ section.get('title', '未命名章节') }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    
+                    <div class="report">
+                        {% for section in result.get('sections', []) %}
+                        <div class="report-section" id="section-{{ section.get('id', loop.index) }}">
+                            <h3>{{ section.get('title', '未命名章节') }}</h3>
+                            <div class="section-content">
+                                {{ section.get('content', '') | safe }}
+                            </div>
+                            
+                            {% if section.get('subsections') %}
+                            {% for subsection in section.get('subsections', []) %}
+                            <div class="report-subsection" id="subsection-{{ subsection.get('id', loop.index) }}">
+                                <h4>{{ subsection.get('title', '未命名子章节') }}</h4>
+                                <div class="subsection-content">
+                                    {{ subsection.get('content', '') | safe }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p><a href="{{ url_for('index') }}">返回首页</a> | &copy; 2025 深度研究 Agent</p>
+        </footer>
+    </div>
+</body>
+</html> 

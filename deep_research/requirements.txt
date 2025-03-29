@@ -1,0 +1,6 @@
+langchain==0.1.13
+langchain-core==0.1.32
+aiohttp==3.9.3
+requests==2.31.0
+pydantic==2.6.3
+typing-extensions==4.10.0 
