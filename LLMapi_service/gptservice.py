@@ -250,7 +250,7 @@ async def call_gemini_api2(input, selected_model):
             f"{GeminiBaseUrl}/openai/chat/completions",
             json=data,
             headers=headers,
-            #proxies=proxies,
+            proxies=proxies,
             timeout=60
         )
         response.raise_for_status()
@@ -315,7 +315,7 @@ async def call_gemini_api(input, selected_model):
             f"https://generativelanguage.googleapis.com/v1beta/models/{selected_model}:generateContent?key={gemini_api_key}",
             json=data,
             headers=headers,
-            #proxies=proxies,
+            proxies=proxies,
             timeout=60
         )
         response.raise_for_status()
