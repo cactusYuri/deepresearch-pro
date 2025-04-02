@@ -9,9 +9,6 @@ from .knowledge_base import KnowledgeBase
 from .output_organizer import OutputOrganizer
 from .main import run_research
 
-# 设置默认模型
-DEFAULT_MODEL = "deepseek-chat"
-
 __version__ = "0.1.0"
 __all__ = [
     "DeepResearchAgent",

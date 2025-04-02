@@ -9,7 +9,7 @@ GeminiBaseUrl = 'https://generativelanguage.googleapis.com/v1beta'
 ApiLoadCount = 0
 # Import API keys from configuration file
 try:
-    from api_keys import gemini_keys,open_ai_keys,deepseek_api_keys
+    from .api_keys import gemini_keys,open_ai_keys,deepseek_api_keys
 except ImportError:
     # Fallback if configuration file is not available
     gemini_keys = ['']
@@ -276,16 +276,27 @@ async def call_gemini_api(input, selected_model):
     
     # Convert OpenAI format to Gemini format 把输入转换成 Gemini 格式
     gemini_contents = []
+    needSearch = False
     for message in input:
         role = "user" if message["role"] == "user" else "model"
         gemini_contents.append({
             "role": role,
             "parts": [{"text": message["content"]}]
         })
+        if message["content"] and 'google_search' in message["content"]:
+            needSearch = True
     
     data = {
         "contents": gemini_contents
     }
+    
+    # Add Google Search tool if needed
+    if needSearch:
+        data["tools"] = [
+            {
+                "google_search": {}
+            }
+        ]
     
     # 这里应填入 Gemini 的API密钥   
     gemini_api_key = gemini_keys[ApiLoadCount % len(gemini_keys)]
@@ -329,10 +340,14 @@ async def call_gemini_api(input, selected_model):
             candidate = resp_data["candidates"][0]
             if "content" in candidate and "parts" in candidate["content"]:
                 parts = candidate["content"]["parts"]
-                if len(parts) > 0 and "text" in parts[0]:
+                text=''
+                if len(parts) > 0 :
+                    for part in parts:
+                        if "text" in part:
+                            text = text + part["text"]
                     return {
                         "role": "assistant",
-                        "content": parts[0]["text"]
+                        "content": text
                     }
         
         # Fallback if the structure is not as expected

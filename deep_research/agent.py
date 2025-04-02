@@ -23,6 +23,8 @@ import sys
 sys.path.append('..')
 from LLMapi_service.gptservice import GPT
 
+from deep_research.config import DEFAULT_MODEL
+
 # 设置默认最大递归深度
 DEFAULT_MAX_RECURSION_DEPTH = 3
 # 设置任务的最小复杂度阈值
@@ -40,7 +42,8 @@ class DeepResearchNode:
         research_context: Dict = None,
         knowledge_base = None,
         depth: int = 0,
-        max_recursion_depth: int = DEFAULT_MAX_RECURSION_DEPTH
+        max_recursion_depth: int = DEFAULT_MAX_RECURSION_DEPTH,
+        model: str = DEFAULT_MODEL
     ):
         self.llm = llm
         self.tools = tools or []
@@ -52,6 +55,7 @@ class DeepResearchNode:
         self.results = {}
         self.depth = depth  # 当前节点深度
         self.max_recursion_depth = max_recursion_depth  # 最大递归深度
+        self.model = model
         
         # 初始化WebSearchTool
         # 检查传入的tools中是否有WebSearchTool
@@ -161,7 +165,7 @@ class DeepResearchNode:
 """}
         ]
         
-        response = await GPT(messages, selected_model='deepseek-chat')
+        response = await GPT(messages, selected_model=self.model)
         return response["content"]
     
     async def _enhance_with_retrieval(self, task: str, context: Dict) -> Dict:
@@ -254,7 +258,7 @@ class DeepResearchNode:
         ]
         
         try:
-            response = await GPT(messages, selected_model='deepseek-chat')
+            response = await GPT(messages, selected_model=self.model)
             content = response["content"]
             
             # 尝试解析JSON
@@ -329,7 +333,7 @@ class DeepResearchNode:
         ]
         
         try:
-            response = await GPT(messages, selected_model='deepseek-chat')
+            response = await GPT(messages, selected_model=self.model)
             content = response["content"]
             
             # 尝试解析JSON
@@ -447,7 +451,7 @@ class DeepResearchNode:
         ]
         
         try:
-            response = await GPT(messages, selected_model='deepseek-chat')
+            response = await GPT(messages, selected_model=self.model)
             solution = {
                 "solution": response["content"],
                 "context": context
@@ -484,7 +488,7 @@ class DeepResearchAgent:
     
     def __init__(
         self, 
-        model: str = "deepseek-chat",
+        model: str = DEFAULT_MODEL,
         max_recursion_depth: int = DEFAULT_MAX_RECURSION_DEPTH,
         knowledge_base: Dict = None
     ):

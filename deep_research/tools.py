@@ -15,12 +15,15 @@ from langchain_core.tools import BaseTool
 from langchain.tools import Tool
 from LLMapi_service.gptservice import GPT, is_deepseek_model
 
-class WebSearchTool(BaseTool):
+from deep_research.config import DEFAULT_MODEL
+
+
+class WebSearchTool_deepseek(BaseTool):
     """网络搜索工具，使用gpt-4o-mini-search-preview模型进行实际网络搜索"""
     
     name: str = "web_search"
     description: str = "执行网络搜索以找到有关特定查询的信息。使用GPT-4o mini搜索模型获取实时网络数据。"
-    model: str = "gpt-4o-mini-search-preview"  # 使用带有网络搜索能力的模型
+    model: str = DEFAULT_MODEL # "gpt-4o-mini-search-preview"  # 使用带有网络搜索能力的模型
     
     async def _arun(self, query: str) -> str:
         """异步执行搜索"""
@@ -108,6 +111,103 @@ class WebSearchTool(BaseTool):
         except Exception as e:
             print(f"搜索时出错: {str(e)}")
             return [{"error": str(e), "query": query}]
+
+#Gemini """使用 Gemini API 进行搜索并格式化结果，调用 google_search 工具。"""
+class WebSearchTool(BaseTool):
+    """网络搜索工具，使用gemini-2.5-pro-exp-03-25模型进行实际网络搜索"""
+    
+    name: str = "web_search"
+    description: str = "执行网络搜索以找到有关特定查询的信息。使用GPT-4o mini搜索模型获取实时网络数据。"
+    model: str = DEFAULT_MODEL 
+    
+    async def _arun(self, query: str) -> str:
+        """异步执行搜索"""
+        results = await self.perform_search(query)
+        return json.dumps(results, ensure_ascii=False)
+    
+    def _run(self, query: str) -> str:
+        """执行搜索"""
+        loop = asyncio.get_event_loop()
+        results = loop.run_until_complete(self.perform_search(query))
+        return json.dumps(results, ensure_ascii=False)
+    
+    async def perform_search(self, query: str) -> List[Dict]:
+        """使用gemini-2.5-pro-exp-03-25模型执行实际网络搜索
+        
+        参数:
+            query: 搜索查询
+            
+        返回:
+            搜索结果列表
+        """
+        try:
+            print(f"正在搜索: {query}")
+            
+            # 构建搜索指令和消息
+            messages = [
+                {"role": "system", "content": "你是一个专业的网络搜索助手。请使用你的搜索能力查找以下问题的相关信息，并返回结果。结果必须包含标题、URL和内容摘要，格式为JSON数组。"},
+                {"role": "user", "content": f"请使用 google_search 工具搜索以下内容并返回至少5个相关结果: {query}\n\n请确保返回JSON格式的结果，格式示例:\n[{{'title': '结果标题', 'url': 'https://example.com', 'snippet': '内容摘要...'}}]"}
+            ]
+            
+            # 调用GPT-4o mini搜索模型
+            response = await GPT(messages, selected_model=self.model)
+            
+            if not response or not isinstance(response, dict) or "content" not in response:
+                return [{"error": "搜索响应无效", "query": query}]
+            
+            content = response["content"]
+            
+            # 提取JSON部分 - 可能在内容中的```json ```包裹的代码块中
+            json_content = content
+            if "```json" in content:
+                # 提取JSON部分
+                start_idx = content.find("```json") + 7
+                end_idx = content.find("```", start_idx)
+                if end_idx > start_idx:
+                    json_content = content[start_idx:end_idx].strip()
+            elif "```" in content:
+                # 尝试从任何代码块中提取
+                start_idx = content.find("```") + 3
+                # 可能还有语言标识符
+                if content[start_idx:].startswith("json"):
+                    start_idx += 4
+                end_idx = content.find("```", start_idx)
+                if end_idx > start_idx:
+                    json_content = content[start_idx:end_idx].strip()
+            
+            # 解析JSON结果
+            try:
+                results = json.loads(json_content)
+                if not isinstance(results, list):
+                    if isinstance(results, dict):
+                        # 处理单个结果
+                        results = [results]
+                    else:
+                        # 解析失败，返回原始内容
+                        return [{"title": "搜索结果", "url": "", "snippet": content}]
+                
+                # 标准化结果格式
+                standardized_results = []
+                for item in results:
+                    if isinstance(item, dict):
+                        result = {
+                            "title": item.get("title", "未知标题"),
+                            "url": item.get("url", ""),
+                            "snippet": item.get("snippet", item.get("content", ""))
+                        }
+                        standardized_results.append(result)
+                
+                return standardized_results
+            except json.JSONDecodeError:
+                # 如果JSON解析失败，返回原始内容
+                print(f"JSON解析失败，原始内容: {content}")
+                return [{"title": "搜索结果", "url": "", "snippet": content}]
+            
+        except Exception as e:
+            print(f"搜索时出错: {str(e)}")
+            return [{"error": str(e), "query": query}]
+
+
 
 class KnowledgeBaseSearchTool(BaseTool):
     """知识库搜索工具"""
