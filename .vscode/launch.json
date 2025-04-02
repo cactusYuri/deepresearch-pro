@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Debug Library",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "D:\\GitHub\\deepresearch-pro\\run_web_app.py",
+            "justMyCode": false,  // 关键：禁用「仅我的代码」
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONNOUSERSITE": "1"  // 可选：禁用第三方库隔离
+            }
+        }
+    ]
+}

@@ -45,7 +45,7 @@ def index():
     models = [
         {"id": "deepseek-chat", "name": "DeepSeek Chat", "description": "通用对话模型，适合大多数研究任务"},
         {"id": "deepseek-reasoner", "name": "DeepSeek Reasoner", "description": "推理能力更强，适合复杂分析"},
-        {"id": "gemini2.5", "name": "gemini-2.5-pro-exp", "description": "推理能力更强，适合复杂分析"}
+        {"id": "gemini-2.5-pro-exp-03-25", "name": "gemini-2.5-pro-exp", "description": "推理能力更强，适合复杂分析"}
     ]
     
     # 添加研究深度选项

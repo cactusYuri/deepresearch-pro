@@ -403,7 +403,8 @@ class DeepResearchNode:
                 research_context=context,
                 knowledge_base=self.knowledge_base,
                 depth=self.depth + 1,
-                max_recursion_depth=self.max_recursion_depth
+                max_recursion_depth=self.max_recursion_depth,
+                model=self.model
             )
             
             # 将子节点添加到当前节点的子节点列表
@@ -546,7 +547,8 @@ class DeepResearchAgent:
             knowledge_base=self.knowledge_base,
             depth=0,
             max_recursion_depth=self.max_recursion_depth,  # 传递最大递归深度
-            tools=self.tools  # 传递tools
+            tools=self.tools,  # 传递tools
+            model=self.model
         )
         
         # 通知前台开始处理核心问题
