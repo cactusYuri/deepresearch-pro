@@ -15,7 +15,7 @@ from langchain_core.tools import BaseTool
 from langchain.tools import Tool
 from LLMapi_service.gptservice import GPT, is_deepseek_model
 
-from deep_research.config import DEFAULT_MODEL
+from deep_research.config import DEFAULT_MODEL,SEARCH_MODEL
 
 
 class WebSearchTool_deepseek(BaseTool):
@@ -118,7 +118,7 @@ class WebSearchTool(BaseTool):
     
     name: str = "web_search"
     description: str = "执行网络搜索以找到有关特定查询的信息。使用GPT-4o mini搜索模型获取实时网络数据。"
-    model: str = DEFAULT_MODEL 
+    model: str = SEARCH_MODEL 
     
     async def _arun(self, query: str) -> str:
         """异步执行搜索"""
@@ -145,8 +145,9 @@ class WebSearchTool(BaseTool):
             
             # 构建搜索指令和消息
             messages = [
-                {"role": "system", "content": "你是一个专业的网络搜索助手。请使用你的搜索能力查找以下问题的相关信息，并返回结果。结果必须包含标题、URL和内容摘要，格式为JSON数组。"},
-                {"role": "user", "content": f"请使用 google_search 工具搜索以下内容并返回至少5个相关结果: {query}\n\n请确保返回JSON格式的结果，格式示例:\n[{{'title': '结果标题', 'url': 'https://example.com', 'snippet': '内容摘要...'}}]"}
+                #{"role": "system", "content": "你是一个专业的网络搜索助手。请使用你的搜索能力查找以下问题的相关信息，并返回结果。结果必须包含标题、URL和内容摘要，格式为JSON数组。"},
+                #{"role": "user", "content": f"请使用 google_search 工具搜索以下内容并返回至少5个相关结果: {query}\n\n请确保返回JSON格式的结果，格式示例:\n[{{'title': '结果标题', 'url': 'https://example.com', 'snippet': '内容摘要...'}}]"}
+                {"role": "user", "content":  f"请使用 google_search 工具搜索:{query}\n\n请返回前 5 条相关信息，并按照以下格式返回：\n[{{'title': '结果标题', 'url': 'https://example.com', 'snippet': '内容摘要...'}}, ...]"}
             ]
             
             # 调用GPT-4o mini搜索模型

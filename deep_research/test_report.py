@@ -18,7 +18,7 @@ async def test_report_generation():
     os.makedirs(output_dir, exist_ok=True)
     
     # 创建Agent实例
-    agent = DeepResearchAgent(model="deepseek-chat")
+    agent = DeepResearchAgent(model="gemini-2.5-pro-exp-03-25")
     
     # 测试查询
     query = "大语言模型在教育领域的应用"

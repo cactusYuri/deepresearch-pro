@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Research Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>AI Research Assistant</h1>
+            <p class="subtitle">AI驱动的综合性研究助手与论文发现系统</p>
+        </header>
+
+        <main>
+            <div class="tabs">
+                <button class="tab-button active" data-tab="research">深度研究</button>
+                <button class="tab-button" data-tab="papers">论文查找</button>
+            </div>
+
+            <div class="tab-content" id="research-tab">
+                <section class="research-form">
+                    <h2>开始一项新研究</h2>
+                    {% if error %}
+                    <div class="error-message">{{ error }}</div>
+                    {% endif %}
+                    
+                    <form action="{{ url_for('submit_query') }}" method="post">
+                        <div class="form-group">
+                            <label for="query">研究问题:</label>
+                            <textarea id="query" name="query" rows="4" placeholder="输入您想研究的问题或主题..." required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="model">选择模型:</label>
+                            <select id="model" name="model">
+                                {% for model in models %}
+                                <option value="{{ model.id }}" {% if model.id == 'deepseek-chat' %}selected{% endif %}>
+                                    {{ model.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="model-description" id="modelDescription">
+                                {{ models[0].description }}
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="max_depth">研究深度:</label>
+                            <select id="max_depth" name="max_depth">
+                                {% for option in depth_options %}
+                                <option value="{{ option.value }}" {% if option.default %}selected{% endif %}>
+                                    {{ option.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="depth-description">
+                                研究深度决定了AI递归分解问题的程度，深度越大研究越全面，但消耗的API调用量也越多
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">开始研究</button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+
+            <div class="tab-content" id="papers-tab" style="display: none;">
+                <section class="paper-finder">
+                    <h2>查找相关论文</h2>
+                    <form id="task-form">
+                        <div class="form-group">
+                            <label for="topic">研究主题:</label>
+                            <textarea id="topic" name="topic" rows="4" placeholder="输入您想查找的论文主题..." required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>感兴趣的顶会 (可选):</label>
+                            <div class="conference-checkboxes">
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="neurips" name="conference" value="NeurIPS">
+                                    <label for="neurips">NeurIPS</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="icml" name="conference" value="ICML">
+                                    <label for="icml">ICML</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="cvpr" name="conference" value="CVPR">
+                                    <label for="cvpr">CVPR</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="iclr" name="conference" value="ICLR">
+                                    <label for="iclr">ICLR</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="acl" name="conference" value="ACL">
+                                    <label for="acl">ACL</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="emnlp" name="conference" value="EMNLP">
+                                    <label for="emnlp">EMNLP</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">查找论文</button>
+                        </div>
+                    </form>
+
+                    <div id="status-area">
+                        <h3>任务状态</h3>
+                        <pre id="status-output">提交任务查看状态...</pre>
+                    </div>
+
+                    <div id="results-area">
+                        <h3>结果</h3>
+                        <div id="sort-options">
+                            <label for="sort-method">排序方式：</label>
+                            <select id="sort-method">
+                                <option value="default">默认排序</option>
+                                <option value="conference">顶会优先</option>
+                                <option value="year-desc">时间降序 (新→旧)</option>
+                                <option value="year-asc">时间升序 (旧→新)</option>
+                            </select>
+                            <button id="apply-sort" type="button" class="btn-secondary">应用排序</button>
+                        </div>
+                        <div id="results-output"></div>
+                    </div>
+                </section>
+            </div>
+            
+            <section class="features">
+                <h2>系统特点</h2>
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <h3>深度研究</h3>
+                        <p>自动将复杂问题分解为子任务，并递归研究，保证研究深度和广度</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>论文发现</h3>
+                        <p>智能查找相关学术论文，支持按顶会和时间筛选</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>信息整合</h3>
+                        <p>整合多种来源的信息，生成结构化的研究报告</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>多种输出格式</h3>
+                        <p>支持HTML、Markdown等格式的研究报告输出</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 AI Research Assistant - 基于大语言模型的智能研究系统</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+        // Tab switching functionality
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all buttons and tabs
+                document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+                
+                // Add active class to clicked button and show corresponding tab
+                button.classList.add('active');
+                const tabId = button.getAttribute('data-tab') + '-tab';
+                document.getElementById(tabId).style.display = 'block';
+            });
+        });
+    </script>
+</body>
+</html> 

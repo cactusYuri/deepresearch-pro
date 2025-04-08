@@ -12,3 +12,7 @@ sentence-transformers>=2.2.2
 numpy>=1.21.0
 torch>=1.13.1
 transformers>=4.30.2 
+PyYAML>=6.0 # For config file
+requests # If any synchronous requests are needed, or legacy code
+# Optional:
+arxiv>=1.4.0 # If using arXiv search

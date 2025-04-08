@@ -108,7 +108,7 @@ class DeepResearchNode:
             print(f"拆分复杂任务 [{self.node_id}]: {task[:50]}...")
             subtasks = await self._decompose_task(task, enhanced_context)
             
-            # 限制子任务数量，防止过度分解
+            # 限制子任务数量，防止过度分解  这里的限制方法错误，应该在任务分解时进行限制！！！ zhb
             if len(subtasks) > 5:
                 subtasks = subtasks[:5]
                 

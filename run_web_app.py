@@ -28,8 +28,8 @@ if __name__ == "__main__":
     try:
         # 创建必要的目录
         logger.info("创建必要的目录")
-        os.makedirs("deep_research/uploads", exist_ok=True)
-        os.makedirs("deep_research/results", exist_ok=True)
+        #os.makedirs("deep_research/uploads", exist_ok=True)
+        #os.makedirs("deep_research/results", exist_ok=True)
         
         # 从命令行参数获取主机和端口(如果有)
         host = '127.0.0.1'  # 默认只监听本地接口
@@ -47,7 +47,7 @@ if __name__ == "__main__":
         logger.info("按 Ctrl+C 停止服务器")
         
         # 导入Flask应用
-        from deep_research.web_app import run_app
+        from web_app import run_app
         
         # 运行Flask应用
         run_app(host=host, port=port, debug=True)

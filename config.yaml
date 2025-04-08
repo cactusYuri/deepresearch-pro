@@ -1,0 +1,42 @@
+# Semantic Scholar API (虽然免费, 但有速率限制, 注册 Key 可能提高额度)
+semantic_scholar_api_key: # 可选, 留空则不使用 Key
+semantic_scholar_api_url: "https://api.semanticscholar.org/graph/v1"
+request_timeout: 60 # API 请求超时时间 (秒)
+papers_per_query: 25 # 每次 API 查询请求的论文数量上限
+max_queries_per_task: 6 # LLM 最多生成多少个查询关键词
+
+# arXiv API settings (如果使用)
+arxiv_max_results: 20
+
+# 年份范围 (搜索最近 N 年的论文)
+search_years_range: 2
+
+# 顶会列表 (用于结果标记, key 是规范名称, value 是可能的别名列表)
+top_conferences:
+  NeurIPS: ["neurips", "neural information processing systems"]
+  ICML: ["icml", "international conference on machine learning"]
+  CVPR: ["cvpr", "conference on computer vision and pattern recognition"]
+  ICLR: ["iclr", "international conference on learning representations"]
+  ACL: ["acl", "annual conference of the association for computational linguistics"]
+  EMNLP: ["emnlp", "empirical methods in natural language processing"]
+  ECCV: ["eccv", "european conference on computer vision"]
+  NAACL: ["naacl", "north american chapter of the association for computational linguistics"]
+  AAAI: ["aaai", "american association for artificial intelligence"]
+  IJCAI: ["ijcai", "international joint conference on artificial intelligence"]
+  ICCV: ["iccv", "international conference on computer vision"]
+  # 可以根据 CCF 列表等添加更多
+
+# 结果存储路径
+results_base_dir: "results"
+
+# LLM 配置 (如果需要特定参数传递给 LLMapi_service)
+llm_model_name: "deepseek-chat" 
+llm_prompt_template: |
+  You are an AI Research Assistant. The user's research introduction is: '{topic}', you need to do Keyphrase Extraction.
+  The user is primarily interested in papers from these top AI conferences if relevant: {conference_list_str}.
+  Your goal is to generate {max_queries} distinct and effective search keyword sets (queries) suitable for academic search engines like Semantic Scholar to find recent papers (last {years_range} years) on this topic.
+  Focus on keywords that capture the core concepts and potentially specific methods or applications mentioned.
+  Return ONLY a JSON list of strings, where each string is a search query. Example: ["keyword set 1", "keyword set 2 for subtopic"]
+
+# 日志配置 (可选)
+logging_level: INFO 
